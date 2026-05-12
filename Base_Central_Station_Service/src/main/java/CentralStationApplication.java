@@ -1,7 +1,9 @@
 import messaging.CentralStationConsumer;
+import messaging.CentralStationConsumerImpl;
 import repository.BitCaskRepository;
 import repository.ParquetArchiver;
 import service.WeatherProcessingService;
+import service.WeatherProcessingServiceImpl;
 
 public class CentralStationApplication {
 
@@ -11,9 +13,9 @@ public class CentralStationApplication {
         BitCaskRepository bitCaskRepo = new BitCaskRepository();
         ParquetArchiver parquetArchiver = new ParquetArchiver();
 
-        WeatherProcessingService weatherService = new WeatherProcessingService(bitCaskRepo, parquetArchiver);
+        WeatherProcessingService weatherService = new WeatherProcessingServiceImpl(bitCaskRepo, parquetArchiver);
 
-        CentralStationConsumer consumer = new CentralStationConsumer(weatherService);
+        CentralStationConsumer consumer = new CentralStationConsumerImpl(weatherService);
 
         consumer.startConsuming();
     }
