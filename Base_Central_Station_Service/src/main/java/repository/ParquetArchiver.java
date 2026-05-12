@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class ParquetArchiver {
 
-    private static final int BATCH_SIZE = 1;
+    private static final int BATCH_SIZE = 10000;
     private static final String BASE_ARCHIVE_DIR = "parquet_archives/";
 
     private final List<WeatherStatus> buffer;
