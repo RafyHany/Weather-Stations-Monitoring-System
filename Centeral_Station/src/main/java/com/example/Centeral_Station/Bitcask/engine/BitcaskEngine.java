@@ -1,28 +1,99 @@
 package com.example.Centeral_Station.Bitcask.engine;
 
+import com.example.Centeral_Station.Bitcask.clock.SystemClock;
+import com.example.Centeral_Station.Bitcask.fileHandler.ReaderBitcask;
+import com.example.Centeral_Station.Bitcask.fileHandler.WriterBitcask;
+import com.example.Centeral_Station.Bitcask.model.BitcaskRecord;
 import com.example.Centeral_Station.Bitcask.model.KeyDirRecord;
+import com.example.Centeral_Station.dto.WeatherStatus;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
+@Component
 public class BitcaskEngine implements BitcaskEngineI {
-    private final ConcurrentHashMap<Long, KeyDirRecord> keyDirRecords = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, KeyDirRecord> keyDir;
+
+    private final WriterBitcask writerBitcask;
+    private final ReaderBitcask readerBitcask;
+    private final ObjectMapper objectMapper;
+
+
+    public BitcaskEngine(WriterBitcask writerBitcask, ReaderBitcask readerBitcask) {
+        this.keyDir = new ConcurrentHashMap<>();
+        this.writerBitcask = writerBitcask;
+        this.readerBitcask = readerBitcask;
+        this.objectMapper = new ObjectMapper();
+    }
+
 
 
 
     @Override
-    public String get(long key) {
-        return "";
+    public void put(WeatherStatus weatherStatus) {
+        if(weatherStatus == null)
+            return;
+        try{
+            byte[] value = objectMapper.writeValueAsBytes(weatherStatus);
+            BitcaskRecord bitcaskRecord = new BitcaskRecord(SystemClock.getCurrentTime(), weatherStatus.stationId(), value);
+            KeyDirRecord keyDirRecord = writerBitcask.writeBitcask(bitcaskRecord);
+            if(keyDirRecord == null)
+                return;
+            this.keyDir.put(weatherStatus.stationId(), keyDirRecord);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
-    public void put(long key, String value) {
+    public WeatherStatus get(long key) {
+        KeyDirRecord pointer = keyDir.get(key);
+        if (pointer == null) {
+            return null; // Station not found
+        }
 
+        try {
+            BitcaskRecord record = readerBitcask.readBitcask(pointer);
+            if (record == null || record.getValue() == null) {
+                return null;
+            }
+
+            return objectMapper.readValue(record.getValue(), WeatherStatus.class);
+
+        } catch (IOException e) {
+            System.err.println("Failed to read status for station: " + key);
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
-    public HashMap<Long, String> getAll() {
-        return new HashMap<>();
+    public List<WeatherStatus> getAll() {
+        List<WeatherStatus> allStatuses = new ArrayList<>();
+
+        for (Map.Entry<Long, KeyDirRecord> entry : keyDir.entrySet()) {
+            try {
+                BitcaskRecord record = readerBitcask.readBitcask(entry.getValue());
+
+                if (record != null && record.getValue() != null) {
+                    WeatherStatus status = objectMapper.readValue(record.getValue(), WeatherStatus.class);
+                    allStatuses.add(status);
+                }
+            } catch (IOException e) {
+                System.err.println("Failed to read record during getAll for station: " + entry.getKey());
+            }
+        }
+
+        return allStatuses;
     }
+
+
 }
