@@ -1,6 +1,7 @@
 package com.example.Centeral_Station.repository;
 
 import com.example.Centeral_Station.dto.WeatherStatus;
+import jakarta.annotation.PreDestroy;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -81,7 +82,9 @@ public class ParquetArchiverImpl implements ParquetArchiver {
     private void writeParquetFile(String partitionDir, List<WeatherStatus> records) {
         try {
             Files.createDirectories(Paths.get(partitionDir));
-            String fileName = "batch_" + UUID.randomUUID() + ".parquet";
+            String fileName = String.format("batch_%d_%s.parquet",
+                    System.currentTimeMillis(),
+                    UUID.randomUUID());
             Path path = new Path(partitionDir + fileName);
             Configuration conf = new Configuration();
             OutputFile outputFile = HadoopOutputFile.fromPath(path, conf);
@@ -115,6 +118,7 @@ public class ParquetArchiverImpl implements ParquetArchiver {
         return record;
     }
 
+    @PreDestroy
     public void shutdown() {
         flushBatch();
     }
