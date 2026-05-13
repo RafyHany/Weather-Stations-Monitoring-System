@@ -99,6 +99,7 @@ public class BitcaskEngine implements BitcaskEngineI {
 
     @Scheduled(fixedRate = 10000)
     private void compactBitcask() throws IOException {
+        System.out.println("Starting Bitcask Compaction...");
         List<Path> dataFiles = this.writerBitcask.getAllDataFiles();
         List<Path> hintFiles = this.writerBitcask.getAllHintFiles();
         this.writerBitcask.createNewFile("_compact");
@@ -123,7 +124,8 @@ public class BitcaskEngine implements BitcaskEngineI {
             }catch (Exception e){
                 e.printStackTrace();
             }finally {
-                scheduler.shutdown(); // Prevent thread leaks
+                scheduler.shutdown();
+                System.out.println("Compaction complete! Old files deleted.");
             }
         }, 2, TimeUnit.SECONDS);
     }
