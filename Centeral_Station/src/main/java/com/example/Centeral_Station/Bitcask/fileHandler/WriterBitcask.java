@@ -134,4 +134,13 @@ public class WriterBitcask {
             Files.delete(path);
         }
     }
+
+    public  synchronized void forceRollover() throws IOException {
+        if (this.fileChannelData != null && this.fileChannelData.isOpen()) {
+            this.fileChannelData.close();
+            this.randomAccessData.close();
+            this.fileChannelHint.close();
+            this.randomAccessHint.close();
+        }
+    }
 }
