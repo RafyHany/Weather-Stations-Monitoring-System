@@ -8,6 +8,11 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class ReaderBitcask {
@@ -41,4 +46,37 @@ public class ReaderBitcask {
             return new BitcaskRecord(timeStamp, key, valueBytes);
         }
     }
+
+    public Map<Long, KeyDirRecord> readHintFiles(Path hintFile) {
+        Map<Long, KeyDirRecord> recoveredPointers = new HashMap<>();
+        try (RandomAccessFile raf = new RandomAccessFile(hintFile.toFile(), "r");
+             FileChannel channel = raf.getChannel()) {
+            String dataFile = hintFile.toString().replace("hint", "data");
+            ByteBuffer buffer = ByteBuffer.allocate(32);
+            while (channel.read(buffer) > 0) {
+                buffer.flip();
+                if (buffer.remaining() < 32) {
+                    break;
+                }
+
+                long timeStamp = buffer.getLong();
+                int keySize = buffer.getInt();
+                int valueSize = buffer.getInt();
+                long valuePosition = buffer.getLong();
+                long key = buffer.getLong();
+
+                buffer.clear();
+
+                KeyDirRecord record = new KeyDirRecord(dataFile, valueSize, valuePosition, timeStamp);
+                recoveredPointers.put(key, record);
+            }
+            return recoveredPointers;
+
+        } catch (Exception e) {
+            System.err.println("Failed to read hint file: " + hintFile.getFileName());
+            e.printStackTrace();
+            return new HashMap<>();
+        }
+    }
+
 }

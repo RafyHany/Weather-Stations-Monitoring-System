@@ -30,14 +30,13 @@ public class BitcaskController {
     @GetMapping("/{key}")
     public ResponseEntity<WeatherStatus> getWeatherStatus(@PathVariable String key) throws IOException {
         long stationId;
-
+        System.out.println("get WeatherStatus");
         try {
             stationId = Long.parseLong(key);
             System.out.println(stationId);
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().build(); // Invalid key format
         }
-
         WeatherStatus weatherStatus = bitcaskEngine.get(stationId);
         if (weatherStatus == null) {
             return ResponseEntity.notFound().build();
@@ -45,10 +44,10 @@ public class BitcaskController {
         return ResponseEntity.ok(weatherStatus);
     }
 
-    @GetMapping("/")
+    @GetMapping("/all")
     public ResponseEntity<List<WeatherStatus>> getBitcaskRecords() throws IOException {
         try{
-            System.out.println("getBitcaskRecords");
+            System.out.println("get All Bitcask Records");
             List<WeatherStatus> res = bitcaskEngine.getAll();
             return ResponseEntity.ok(res);
         } catch (Exception e){

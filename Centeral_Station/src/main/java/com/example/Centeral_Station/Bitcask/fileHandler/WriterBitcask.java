@@ -10,6 +10,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.logging.Logger;
 
 @Component
@@ -21,9 +25,9 @@ public class WriterBitcask {
     private FileChannel fileChannelHint ;
     private RandomAccessFile randomAccessData;
     private RandomAccessFile randomAccessHint ;
-    private final int MAX_FILE_SIZE = 1024  ; // 1 MB
+    private final int MAX_FILE_SIZE = 1024 * 1024  ; // 1 MB
     public WriterBitcask() throws IOException {
-        createNewFile();
+        createNewFile("");
     }
 
     public synchronized KeyDirRecord writeBitcask(BitcaskRecord bitcaskRecord) throws IOException {
@@ -41,7 +45,7 @@ public class WriterBitcask {
             this.randomAccessData.close();
             this.fileChannelHint.close();
             this.randomAccessHint.close();
-            createNewFile();
+            createNewFile("");
         }
 
 
@@ -57,7 +61,7 @@ public class WriterBitcask {
         this.fileChannelData.position(fileChannelData.size());
         this.fileChannelData.write(byteBuffer);
 
-        System.out.println(fileChannelData.size());
+//        System.out.println(fileChannelData.size());
         KeyDirRecord res = new KeyDirRecord(this.fileName, bitcaskRecord.getValueSize(), currentPosition, bitcaskRecord.getTimeStamp());
         writeHint(res, bitcaskRecord.getKey());
         return res ;
@@ -74,6 +78,7 @@ public class WriterBitcask {
                 + 8 ; //long key
 
         ByteBuffer byteBuffer = ByteBuffer.allocate((int) totalSize);
+
         byteBuffer.putLong(record.getTimeStamp());
         byteBuffer.putInt(8); // keySize is always 8 bytes for long
         byteBuffer.putInt(record.getValueSize());
@@ -85,11 +90,11 @@ public class WriterBitcask {
         this.fileChannelHint .write(byteBuffer);
     }
 
-    private void createNewFile() throws IOException {
+    public void createNewFile(String compactionName) throws IOException {
         long currentTime = SystemClock.getCurrentTime();
-        String filenameData = this.directoryPathData + String.valueOf(currentTime) + ".data";
-        String filenameHint = this.directoryPathHint + String.valueOf(currentTime) + ".hint";
-        this.fileName = filenameData;
+        String filenameData = this.directoryPathData + String.valueOf(currentTime) + compactionName + ".data";
+        String filenameHint = this.directoryPathHint + String.valueOf(currentTime) + compactionName + ".hint";
+        this.fileName = filenameData ;
         try {
             // DO NOT use try-with-resources here. We need it to stay open!
             this.randomAccessData = new RandomAccessFile(filenameData, "rw");
@@ -102,5 +107,31 @@ public class WriterBitcask {
             throw e; // Rethrow so the application knows it failed to start
         }
 
+    }
+
+    public List<Path> getAllDataFiles() throws IOException {
+        try{
+            Path directory = Paths.get(directoryPathData);
+            return Files.list(directory).filter(Files::isRegularFile).sorted().toList();
+        }catch (Exception e){
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+    public List<Path> getAllHintFiles() throws IOException {
+        try {
+            Path directory = Paths.get(directoryPathHint);
+            return Files.list(directory).filter(Files::isRegularFile).sorted().toList();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+
+    public void deleteAllFiles(List<Path> files) throws IOException {
+        for (Path path : files) {
+            Files.delete(path);
+        }
     }
 }

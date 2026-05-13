@@ -6,16 +6,18 @@ import com.example.Centeral_Station.Bitcask.fileHandler.WriterBitcask;
 import com.example.Centeral_Station.Bitcask.model.BitcaskRecord;
 import com.example.Centeral_Station.Bitcask.model.KeyDirRecord;
 import com.example.Centeral_Station.dto.WeatherStatus;
+import jakarta.annotation.PostConstruct;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
 
 @Component
 public class BitcaskEngine implements BitcaskEngineI {
@@ -95,5 +97,55 @@ public class BitcaskEngine implements BitcaskEngineI {
         return allStatuses;
     }
 
+    @Scheduled(fixedRate = 10000)
+    private void compactBitcask() throws IOException {
+        List<Path> dataFiles = this.writerBitcask.getAllDataFiles();
+        List<Path> hintFiles = this.writerBitcask.getAllHintFiles();
+        this.writerBitcask.createNewFile("_compact");
+        HashMap<Long, KeyDirRecord> snapshot = new HashMap<>(this.keyDir);
+
+        for (Map.Entry<Long, KeyDirRecord> entry : snapshot.entrySet()) {
+            KeyDirRecord oldPointer = entry.getValue();
+            BitcaskRecord record = this.readerBitcask.readBitcask(entry.getValue());
+
+
+            if (record != null) {
+                KeyDirRecord newPointer = this.writerBitcask.writeBitcask(record);
+                this.keyDir.replace(entry.getKey(), oldPointer,  newPointer);
+            }
+        }
+
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.schedule(() ->{
+            try {
+                this.writerBitcask.deleteAllFiles(dataFiles);
+                this.writerBitcask.deleteAllFiles(hintFiles);
+            }catch (Exception e){
+                e.printStackTrace();
+            }finally {
+                scheduler.shutdown(); // Prevent thread leaks
+            }
+        }, 2, TimeUnit.SECONDS);
+    }
+
+    @PostConstruct
+    private void recoveryBitcask() throws IOException {
+        System.out.println("Starting Bitcask Engine Recovery...");
+
+        try {
+            List<Path> hintFiles = this.writerBitcask.getAllHintFiles();
+            for (Path hintFile : hintFiles) {
+                System.out.println(hintFile.toFile());
+                Map<Long, KeyDirRecord> fileRecords = this.readerBitcask.readHintFiles(hintFile);
+                this.keyDir.putAll(fileRecords);
+            }
+            for(Map.Entry<Long, KeyDirRecord> entry : this.keyDir.entrySet()){
+                System.out.println("Station ID: " + entry.getKey() + ", File: " + entry.getValue().getFilename() );
+            }
+            System.out.println("Recovery complete! " + keyDir.size() + " stations loaded.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }
