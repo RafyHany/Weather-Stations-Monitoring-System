@@ -102,6 +102,7 @@ public class BitcaskEngine implements BitcaskEngineI {
         System.out.println("Starting Bitcask Compaction...");
         List<Path> dataFiles = this.writerBitcask.getAllDataFiles();
         List<Path> hintFiles = this.writerBitcask.getAllHintFiles();
+        this.writerBitcask.forceRollover();
         this.writerBitcask.createNewFile("_compact");
         HashMap<Long, KeyDirRecord> snapshot = new HashMap<>(this.keyDir);
 
