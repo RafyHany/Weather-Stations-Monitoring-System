@@ -34,7 +34,7 @@ services:
     image: central-station:1.0
     container_name: central-station
     environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     ports:
       - "8080:8080"
     volumes:
@@ -44,17 +44,85 @@ services:
     networks:
       - weather-network
 
-  weather-station:
+  x-station-template: &station-template
     build:
       context: ./weather-station
       dockerfile: Dockerfile.station
     image: weather-station:1.0
-    environment:
-      - KAFKA_BOOTSTRAP=kafka:9092
     depends_on:
       - kafka
     networks:
       - weather-network
+
+  weather-station-1:
+    <<: *station-template
+    container_name: weather-station-1
+    environment:
+      - STATION_ID=1
+      - KAFKA_BOOTSTRAP=kafka:29092
+
+  weather-station-2:
+    <<: *station-template
+    container_name: weather-station-2
+    environment:
+      - STATION_ID=2
+      - KAFKA_BOOTSTRAP=kafka:29092
+
+  weather-station-3:
+    <<: *station-template
+    container_name: weather-station-3
+    environment:
+      - STATION_ID=3
+      - KAFKA_BOOTSTRAP=kafka:29092
+
+  weather-station-4:
+    <<: *station-template
+    container_name: weather-station-4
+    environment:
+      - STATION_ID=4
+      - KAFKA_BOOTSTRAP=kafka:29092
+
+  weather-station-5:
+    <<: *station-template
+    container_name: weather-station-5
+    environment:
+      - STATION_ID=5
+      - KAFKA_BOOTSTRAP=kafka:29092
+  
+  weather-station-6:
+    <<: *station-template
+    container_name: weather-station-6
+    environment:
+      - STATION_ID=6
+      - KAFKA_BOOTSTRAP=kafka:29092
+  
+  weather-station-7:
+    <<: *station-template
+    container_name: weather-station-7
+    environment:
+      - STATION_ID=7
+      - KAFKA_BOOTSTRAP=kafka:29092
+  
+  weather-station-8:
+    <<: *station-template
+    container_name: weather-station-8
+    environment:
+      - STATION_ID=8
+      - KAFKA_BOOTSTRAP=kafka:29092
+  
+  weather-station-9:
+    <<: *station-template
+    container_name: weather-station-9
+    environment:
+      - STATION_ID=9
+      - KAFKA_BOOTSTRAP=kafka:29092
+  
+  weather-station-10:
+    <<: *station-template
+    container_name: weather-station-10
+    environment:
+      - STATION_ID=10
+      - KAFKA_BOOTSTRAP=kafka:29092
 
 networks:
   weather-network:
