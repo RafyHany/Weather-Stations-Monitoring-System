@@ -1,10 +1,10 @@
 # Use a full JDK base image on Ubuntu Jammy to ensure JFR and profiling tools are available
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:21-jdk-jammy
 
-# Create a dedicated directory for the application and data
+# Create a dedicated directory for the application
 WORKDIR /app
 
-# Create a volume mount point for the BitCask directory and Parquet files
+# Match the 'data/' base directory defined in application.properties
 VOLUME /app/data
 
 # Copy the compiled Spring Boot executable JAR
