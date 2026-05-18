@@ -3,6 +3,8 @@ package com.example.Centeral_Station.Bitcask.fileHandler;
 import com.example.Centeral_Station.Bitcask.clock.SystemClock;
 import com.example.Centeral_Station.Bitcask.model.BitcaskRecord;
 import com.example.Centeral_Station.Bitcask.model.KeyDirRecord;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
@@ -18,15 +20,23 @@ import java.util.logging.Logger;
 
 @Component
 public class WriterBitcask {
-    private final String directoryPathData = "Data/data/";
-    private final String directoryPathHint = "Data/hint/";
+    @Value("${app.storage.bitcask.data-dir}")
+    private String directoryPathData;
+
+    @Value("${app.storage.bitcask.hint-dir}")
+    private String directoryPathHint;
+
     private String fileName;
     private FileChannel fileChannelData;
     private FileChannel fileChannelHint ;
     private RandomAccessFile randomAccessData;
     private RandomAccessFile randomAccessHint ;
     private final int MAX_FILE_SIZE = 1024 * 1024  ; // 1 MB
-    public WriterBitcask() throws IOException {
+    public WriterBitcask() {}
+
+    @PostConstruct
+    public void init() throws IOException {
+        ensureDirectoriesExist();
         createNewFile("");
     }
 
@@ -142,5 +152,15 @@ public class WriterBitcask {
             this.fileChannelHint.close();
             this.randomAccessHint.close();
         }
+    }
+
+    private void ensureDirectoriesExist() throws IOException {
+        Path dataPath = Paths.get(directoryPathData);
+        Path hintPath = Paths.get(directoryPathHint);
+
+        Files.createDirectories(dataPath);
+        Files.createDirectories(hintPath);
+
+        Logger.getLogger(WriterBitcask.class.getName()).info("Verified/Created Bitcask directories.");
     }
 }

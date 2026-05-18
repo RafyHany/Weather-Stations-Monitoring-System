@@ -12,6 +12,7 @@ import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
 import org.apache.parquet.io.OutputFile;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -30,7 +31,9 @@ import java.util.stream.Collectors;
 public class ParquetArchiverImpl implements ParquetArchiver {
 
     private static final int BATCH_SIZE = 10000;
-    private static final String BASE_ARCHIVE_DIR = "parquet_archives/";
+
+    @Value("${app.storage.parquet.archive-dir}")
+    private String baseArchiveDir;
 
     private final List<WeatherStatus> buffer;
     private final Schema avroSchema;
@@ -76,7 +79,7 @@ public class ParquetArchiverImpl implements ParquetArchiver {
 
     private String generatePartitionPath(WeatherStatus status) {
         String dateStr = dateFormatter.format(Instant.ofEpochSecond(status.statusTimestamp()));
-        return BASE_ARCHIVE_DIR + "station_id=" + status.stationId() + "/date=" + dateStr + "/";
+        return baseArchiveDir + "station_id=" + status.stationId() + "/date=" + dateStr + "/";
     }
 
     private void writeParquetFile(String partitionDir, List<WeatherStatus> records) {
