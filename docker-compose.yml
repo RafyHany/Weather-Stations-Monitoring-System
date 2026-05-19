@@ -88,41 +88,55 @@ services:
     environment:
       - STATION_ID=5
       - KAFKA_BOOTSTRAP=kafka:29092
-  
+
   weather-station-6:
     <<: *station-template
     container_name: weather-station-6
     environment:
       - STATION_ID=6
       - KAFKA_BOOTSTRAP=kafka:29092
-  
+
   weather-station-7:
     <<: *station-template
     container_name: weather-station-7
     environment:
       - STATION_ID=7
       - KAFKA_BOOTSTRAP=kafka:29092
-  
+
   weather-station-8:
     <<: *station-template
     container_name: weather-station-8
     environment:
       - STATION_ID=8
       - KAFKA_BOOTSTRAP=kafka:29092
-  
+
   weather-station-9:
     <<: *station-template
     container_name: weather-station-9
     environment:
       - STATION_ID=9
       - KAFKA_BOOTSTRAP=kafka:29092
-  
+
   weather-station-10:
     <<: *station-template
     container_name: weather-station-10
     environment:
       - STATION_ID=10
       - KAFKA_BOOTSTRAP=kafka:29092
+
+  rain-detector:
+    build:
+      context: ./weather-station
+      dockerfile: Dockerfile.detector
+    image: rain-detector:1.0
+    container_name: rain-detector
+    environment:
+      - KAFKA_BOOTSTRAP=kafka:29092
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      - kafka
+    networks:
+      - weather-network
 
 networks:
   weather-network:
