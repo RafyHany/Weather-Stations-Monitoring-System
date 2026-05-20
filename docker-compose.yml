@@ -137,6 +137,51 @@ services:
       - kafka
     networks:
       - weather-network
+  
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false # Disables security for easy local dev
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200" # Exposes ES to your host machine (localhost:9200)
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - weather-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601" # Exposes Kibana UI to your host machine (localhost:5601)
+    depends_on:
+      - elasticsearch
+    networks:
+      - weather-network
+  
+  search-integration-service:
+    build:
+      context: ./demo
+      dockerfile: Dockerfile
+    image: search-integration:1.0
+    container_name: search-integration-service
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+      - APP_STORAGE_PARQUET_ARCHIVE_DIR=/app/data/parquet_archives/
+    ports:
+      - "8081:8080"
+    volumes:
+      - central_data:/app/data 
+    depends_on:
+      - elasticsearch
+    networks:
+      - weather-network
 
 networks:
   weather-network:
@@ -144,3 +189,4 @@ networks:
 
 volumes:
   central_data:
+  es_data:
