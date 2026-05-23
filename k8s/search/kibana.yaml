@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana-deployment
+  namespace: weather-station
+  labels:
+    app: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+        - name: kibana
+          image: docker.elastic.co/kibana/kibana:8.12.0
+          ports:
+            - containerPort: 5601
+          env:
+            - name: ELASTICSEARCH_HOSTS
+              value: "http://elasticsearch:9200"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: weather-station
+spec:
+  type: NodePort
+  selector:
+    app: kibana # service is attached and forwards the requests to pods with this label
+  ports:
+    - protocol: TCP
+      port: 5601 # service listens on this port
+      targetPort: 5601 # service forwards the request to pod on this port
+      nodePort: 30099 # The physical port on the Minikube server
+
+
+# minikube service kibana -n weather-station  ## used to run the ui

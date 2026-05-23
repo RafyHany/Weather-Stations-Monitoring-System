@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: central-station-deployment
+  namespace: weather-station
+  labels:
+    app: central-station
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: central-station
+  template:
+    metadata:
+      labels:
+        app: central-station
+    spec:
+      containers:
+        - name: central-station
+          image: central-station:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:29092"
+          volumeMounts:
+            - mountPath: /app/data
+              name: central-storage
+
+      volumes:
+        - name: central-storage
+          persistentVolumeClaim:
+            claimName: central-station-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: central-station
+  namespace: weather-station
+spec:
+  type: NodePort
+  selector:
+    app: central-station
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30080                     # Access this via localhost:30080

@@ -1,0 +1,11 @@
+key,value
+0,"{""station_id"": 0, ""s_no"": 3824, ""battery_status"": ""low"", ""status_timestamp"": 1779538908, ""weather"": {""humidity"": 29, ""temperature"": 76, ""wind_speed"": 11}}"
+1,"{""station_id"": 1, ""s_no"": 3822, ""battery_status"": ""low"", ""status_timestamp"": 1779538908, ""weather"": {""humidity"": 92, ""temperature"": 114, ""wind_speed"": 24}}"
+2,"{""station_id"": 2, ""s_no"": 3820, ""battery_status"": ""low"", ""status_timestamp"": 1779538908, ""weather"": {""humidity"": 70, ""temperature"": 88, ""wind_speed"": 24}}"
+3,"{""station_id"": 3, ""s_no"": 3817, ""battery_status"": ""medium"", ""status_timestamp"": 1779538907, ""weather"": {""humidity"": 68, ""temperature"": 118, ""wind_speed"": 19}}"
+4,"{""station_id"": 4, ""s_no"": 3816, ""battery_status"": ""high"", ""status_timestamp"": 1779538908, ""weather"": {""humidity"": 36, ""temperature"": 100, ""wind_speed"": 40}}"
+5,"{""station_id"": 5, ""s_no"": 3814, ""battery_status"": ""low"", ""status_timestamp"": 1779538908, ""weather"": {""humidity"": 38, ""temperature"": 71, ""wind_speed"": 27}}"
+6,"{""station_id"": 6, ""s_no"": 3812, ""battery_status"": ""high"", ""status_timestamp"": 1779538908, ""weather"": {""humidity"": 64, ""temperature"": 91, ""wind_speed"": 23}}"
+7,"{""station_id"": 7, ""s_no"": 3810, ""battery_status"": ""medium"", ""status_timestamp"": 1779538908, ""weather"": {""humidity"": 52, ""temperature"": 64, ""wind_speed"": 38}}"
+8,"{""station_id"": 8, ""s_no"": 3808, ""battery_status"": ""medium"", ""status_timestamp"": 1779538908, ""weather"": {""humidity"": 39, ""temperature"": 115, ""wind_speed"": 19}}"
+9,"{""station_id"": 9, ""s_no"": 3806, ""battery_status"": ""medium"", ""status_timestamp"": 1779538908, ""weather"": {""humidity"": 8, ""temperature"": 67, ""wind_speed"": 7}}"

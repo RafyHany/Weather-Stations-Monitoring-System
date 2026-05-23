@@ -1,0 +1,59 @@
+# ==========================================
+# PART 1: THE DEPLOYMENT
+# ==========================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-integration-deployment
+  namespace: weather-station
+  labels:
+    app: search-integration
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: search-integration
+  template:
+    metadata:
+      labels:
+        app: search-integration
+    spec:
+      containers:
+        - name: search-integration
+          image: search-integration:1.0
+          imagePullPolicy: Never          # CRITICAL: Tells Minikube to use your local Docker build
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ELASTICSEARCH_HOST
+              value: "elasticsearch"      # 1. Connects to the ES network Service!
+            - name: ELASTICSEARCH_PORT
+              value: "9200"
+            - name: APP_STORAGE_PARQUET_ARCHIVE_DIR
+              value: "/app/data/parquet_archives/"
+
+          volumeMounts:
+            - mountPath: /app/data
+              name: shared-data
+
+      volumes:
+        - name: shared-data
+          persistentVolumeClaim:
+            claimName: central-station-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-integration
+  namespace: weather-station
+spec:
+  type: NodePort                          # Exposes this API to the physical laptop
+  selector:
+    app: search-integration
+  ports:
+    - protocol: TCP
+      port: 8080                          # Internal port
+      targetPort: 8080                    # Container port
+      nodePort: 30081

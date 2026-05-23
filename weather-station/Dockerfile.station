@@ -14,13 +14,7 @@ WORKDIR /app
 
 COPY --from=build /app/target/weather-station-1.0-SNAPSHOT.jar app.jar
 
-# Default environment variables.
-# In Kubernetes, override these in the pod spec:
-#   env:
-#     - name: STATION_ID
-#       value: "3"
-#     - name: KAFKA_BOOTSTRAP
-#       value: "kafka-service:9092"
+
 ENV STATION_ID=1
 ENV KAFKA_BOOTSTRAP=kafka:9092
 
