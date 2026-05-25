@@ -32,18 +32,16 @@ spec:
                 value: "single-node"
               - name: xpack.security.enabled
                 value: "false"
-              # 🧠 Lower Java Heap memory to 512MB so it fits perfectly
               - name: ES_JAVA_OPTS
                 value: "-Xms512m -Xmx512m"
               - name: cluster.routing.allocation.disk.threshold_enabled
                 value: "false"
-              # 🛡️ Add this resource block right here to stop exit code 137
             resources:
               requests:
                 memory: "1Gi"
                 cpu: "500m"
               limits:
-                memory: "2Gi"   # Allows up to 2GB max before an OOM trigger
+                memory: "2Gi"
                 cpu: "1000m"
 
             volumeMounts:

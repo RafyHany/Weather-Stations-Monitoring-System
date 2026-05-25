@@ -10,5 +10,6 @@ public class CenteralStationApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(CenteralStationApplication.class, args);
+
 	}
 }

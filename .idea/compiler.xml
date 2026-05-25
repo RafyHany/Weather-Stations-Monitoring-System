@@ -8,11 +8,9 @@
         <outputRelativeToContentRoot value="true" />
         <module name="weather-station" />
         <module name="demo" />
+        <module name="Centeral_Station" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="Centeral_Station" target="21" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

@@ -48,7 +48,7 @@ public class WriterBitcask {
                 + 4 // int valueSize
                 + 8 ; //long key
 
-        int totalSize =  headerSize  + bitcaskRecord.getValueSize(); //byte[] value
+        int totalSize =  headerSize  + bitcaskRecord.getValueSize();
 
         if (this.fileChannelData.size() + totalSize >  MAX_FILE_SIZE) {
             this.fileChannelData.close();
@@ -106,7 +106,6 @@ public class WriterBitcask {
         String filenameHint = this.directoryPathHint + String.valueOf(currentTime) + compactionName + ".hint";
         this.fileName = filenameData ;
         try {
-            // DO NOT use try-with-resources here. We need it to stay open!
             this.randomAccessData = new RandomAccessFile(filenameData, "rw");
             this.fileChannelData = this.randomAccessData.getChannel();
 
@@ -114,7 +113,7 @@ public class WriterBitcask {
             this.fileChannelHint = this.randomAccessHint.getChannel();
         } catch (FileNotFoundException e) {
             Logger.getLogger(WriterBitcask.class.getName()).severe("File not found: " + e.getMessage());
-            throw e; // Rethrow so the application knows it failed to start
+            throw e;
         }
 
     }
